@@ -195,8 +195,26 @@ var AppDynamicsSDK = /** @class */ (function () {
             return [];
         });
     };
+    AppDynamicsSDK.prototype.getServiceEndpoints = function (appName, tierName) {
+        var _this = this;
+        var url = this.url + '/controller/rest/applications/' + appName + '/metrics?metric-path=Service+Endpoints|' + tierName;
+        return this.backendSrv.datasourceRequest({
+            url: url,
+            method: 'GET',
+            params: { output: 'json' }
+        }).then(function (response) {
+            if (response.status === 200) {
+                return _this.getFilteredNames('', response.data);
+            }
+            else {
+                return [];
+            }
+        }).catch(function (error) {
+            return [];
+        });
+    };
     AppDynamicsSDK.prototype.getTemplateNames = function (query) {
-        var possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes'];
+        var possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes', 'ServiceEndpoints'];
         var templatedQuery = this.templateSrv.replace(query);
         if (templatedQuery.indexOf('.') > -1) {
             var values = templatedQuery.split('.');
@@ -214,7 +232,7 @@ var AppDynamicsSDK = /** @class */ (function () {
             }
             //console.log(appName, tierName, type);
             if (possibleQueries.indexOf(type) === -1) {
-                app_events_1.default.emit('alert-error', ['Error', 'Templating must be one of Applications, AppName.BusinessTransactions, AppName.Tiers, AppName.Nodes']);
+                app_events_1.default.emit('alert-error', ['Error', 'Templating must be one of Applications, AppName.BusinessTransactions, AppName.Tiers, AppName.Tiername.ServiceEndpoints, AppName.Nodes']);
             }
             else {
                 switch (type) {
@@ -224,8 +242,10 @@ var AppDynamicsSDK = /** @class */ (function () {
                         return this.getTierNames(appName);
                     case 'Nodes':
                         return this.getNodeNames(appName, tierName);
+                    case 'ServiceEndpoints':
+                        return this.getServiceEndpoints(appName, tierName);
                     default:
-                        app_events_1.default.emit('alert-error', ['Error', "The value after '.' must be BusinessTransactions, Tiers or Nodes"]);
+                        app_events_1.default.emit('alert-error', ['Error', "The value after '.' must be BusinessTransactions, ServiceEndpoints, Tiers or Nodes"]);
                 }
             }
         }
