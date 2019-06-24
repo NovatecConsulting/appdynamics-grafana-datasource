@@ -216,8 +216,26 @@ export class AppDynamicsSDK {
         });
     }
 
+    getServiceEndpoints(appName, tierName) {
+        let url = this.url + '/controller/rest/applications/' + appName + '/metrics?metric-path=Service+Endpoints|' + tierName;
+        return this.backendSrv.datasourceRequest({
+            url,
+            method: 'GET',
+            params: { output: 'json' }
+        }).then((response) => {
+            if (response.status === 200) {
+                return this.getFilteredNames('', response.data);
+            } else {
+                return [];
+            }
+
+        }).catch((error) => {
+            return [];
+        });
+    }
+
     getTemplateNames(query) {
-        const possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes'];
+        const possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes', 'ServiceEndpoints'];
         const templatedQuery = this.templateSrv.replace(query);
 
         if (templatedQuery.indexOf('.') > -1) {
@@ -238,7 +256,7 @@ export class AppDynamicsSDK {
 
             if (possibleQueries.indexOf(type) === -1) {
                 appEvents.emit('alert-error',
-                    ['Error', 'Templating must be one of Applications, AppName.BusinessTransactions, AppName.Tiers, AppName.Nodes']);
+                    ['Error', 'Templating must be one of Applications, AppName.BusinessTransactions, AppName.Tiers, AppName.Tiername.ServiceEndpoints, AppName.Nodes']);
             } else {
                 switch (type) {
                     case 'BusinessTransactions':
@@ -247,8 +265,10 @@ export class AppDynamicsSDK {
                         return this.getTierNames(appName);
                     case 'Nodes':
                         return this.getNodeNames(appName, tierName);
+                    case 'ServiceEndpoints':
+                        return this.getServiceEndpoints(appName, tierName);
                     default:
-                        appEvents.emit('alert-error', ['Error', "The value after '.' must be BusinessTransactions, Tiers or Nodes"]);
+                        appEvents.emit('alert-error', ['Error', "The value after '.' must be BusinessTransactions, ServiceEndpoints, Tiers or Nodes"]);
 
                 }
             }
