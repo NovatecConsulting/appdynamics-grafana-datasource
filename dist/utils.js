@@ -34,7 +34,11 @@ function resolveMetricQueries(query) {
             var allPatterns = new RegExp(element, 'g');
             var possibleElements = element.match(allPatterns);
             possibleElements.forEach(function (possibleElement) {
-                queries.push(query.replace(element, possibleElement));
+                // MATTHIAS HUBER: we do not know why parenthesis needs to be removed. Maybe AppDynamics REST Calls in
+                // earlier versions did not work. We have to keep them for metrics like 'Average Response Time (ms)'
+                // queries.push(query.replace(element, possibleElement));
+                // TEMPORARY FIX: we simply don't remove the parenthesis. Refactoring maybe in the future.
+                queries.push(query);
             });
         });
     }
