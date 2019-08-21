@@ -1,12 +1,7 @@
-## Grafana AppDynamics Datasource
+# AppDynamics Data Source
 
-This plugin is developed by the community and not officially supported by AppDynamics.
+AppDynamics Data Source for Grafana
 
-When configuring the datasource, use "proxy" and basic authentication.
-Remember that the username should be "user@account", i.e: david.lopes@customer1
+This software is forked from the original plugin [created by David Lopes](https://github.com/dlopes7). [While this version of the data source is free and open-source, the original plugin was converted to a Grafana Premium Plugin.](https://github.com/grafana/grafana-plugin-repository/pull/189) If you require official support or the latest updates by the Grafana team, have a look at [Grafana's support subscription plans](https://grafana.com/services/support).
 
-### Features
-
-- Auto completion for Application and Metric names.
-- Multiple applications on the same panel.
-- Select multiple metrics with the wildcard character *.
+This software is not affiliated with or supported by AppDynamics.

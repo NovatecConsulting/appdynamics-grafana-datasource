@@ -178,6 +178,28 @@ export class AppDynamicsSDK {
         });
     }
 
+    getBusinessTransactionId(appName, tierName, btName) {
+        const url = this.url + '/controller/rest/applications/' + appName + '/business-transactions/';
+        return this.backendSrv.datasourceRequest({
+            url,
+            method: 'GET',
+            params: { output: 'json' }
+        }).then((response) => {
+            if (response.status === 200) {
+                if (tierName && btName) {
+                    return this.getBTIdsInTier(tierName, btName, response.data);
+                } else {
+                    return [];
+                }
+            } else {
+                return [];
+            }
+
+        }).catch((error) => {
+            return [];
+        });
+    }
+
     getTierNames(appName) {
         return this.backendSrv.datasourceRequest({
             url: this.url + '/controller/rest/applications/' + appName + '/tiers',
@@ -235,48 +257,50 @@ export class AppDynamicsSDK {
     }
 
     getTemplateNames(query) {
-        const possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes', 'ServiceEndpoints'];
-        const templatedQuery = this.templateSrv.replace(query);
+        const possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes', 'ServiceEndpoints', 'ApplicationId', 'BusinessTransactionId'];
 
-        if (templatedQuery.indexOf('.') > -1) {
-            const values = templatedQuery.split('.');
-            let appName;
-            let tierName;
-            let type;
+        if (query.indexOf('.') > -1) {
+            const values = query.split('.');
+            let appName: string;
+            let tierName: string;
+            let btName: string;
+            let type: string;
 
-            if (values.length === 3) {
-                appName = values[0];
-                tierName = values[1];
-                type = values[2];
-            } else {
-                appName = values[0];
-                type = values[1];
+            type = values[values.length - 1];
+            appName = this.templateSrv.replace(values[0]);
+
+            if (values.length >= 3) {      
+                tierName = this.templateSrv.replace(values[1]);
             }
-            //console.log(appName, tierName, type);
+            if (values.length >= 4) {
+                btName = this.templateSrv.replace(values[2]);
+            }
 
             if (possibleQueries.indexOf(type) === -1) {
                 appEvents.emit('alert-error',
-                    ['Error', 'Templating must be one of Applications, AppName.BusinessTransactions, AppName.Tiers, AppName.Tiername.ServiceEndpoints, AppName.Nodes']);
+                    ['Error', 'Templating must be one of Applications, AppName.BusinessTransactions, AppName.Tier.BusinessTransaction.BusinessTransactionId, AppName.Tiers, AppName.Tiername.ServiceEndpoints, AppName.Nodes, AppName.ApplicationId']);
             } else {
                 switch (type) {
                     case 'BusinessTransactions':
                         return this.getBusinessTransactionNames(appName, tierName);
+                    case 'BusinessTransactionId':
+                        return this.getBusinessTransactionId(appName, tierName, btName);
                     case 'Tiers':
                         return this.getTierNames(appName);
+                    case 'ApplicationId':
+                        return this.getApplicationId(appName);
                     case 'Nodes':
                         return this.getNodeNames(appName, tierName);
                     case 'ServiceEndpoints':
                         return this.getServiceEndpoints(appName, tierName);
                     default:
-                        appEvents.emit('alert-error', ['Error', "The value after '.' must be BusinessTransactions, ServiceEndpoints, Tiers or Nodes"]);
+                        appEvents.emit('alert-error', ['Error', "The value after '.' must be BusinessTransactions, ServiceEndpoints, Tiers, Nodes, BusinessTransactionId or ApplicationId"]);
 
                 }
             }
-
         } else {
             return this.getApplicationNames('');
         }
-
     }
 
     getApplicationNames(query) {
@@ -288,6 +312,23 @@ export class AppDynamicsSDK {
         }).then((response) => {
             if (response.status === 200) {
                 return this.getFilteredNames(templatedQuery, response.data);
+            } else {
+                return [];
+            }
+
+        }).catch((error) => {
+            return [];
+        });
+    }
+
+    getApplicationId(appName) {
+        return this.backendSrv.datasourceRequest({
+            url: this.url + '/controller/rest/applications/' + appName,
+            method: 'GET',
+            params: { output: 'json' }
+        }).then((response) => {
+            if (response.status === 200) {
+                return [{name:response.data[0]["id"]}];
             } else {
                 return [];
             }
@@ -341,6 +382,30 @@ export class AppDynamicsSDK {
                     || element.name.toLowerCase().indexOf(query.toLowerCase()) !== -1;
             });
         }
+    }
+
+    getBTIdsInTier(tierName, btName, arrayResponse) {
+        // We only want the BT-ID's that belong to a tier and the corresponding BT name
+        let arr: any;
+        let returnResponse: any[] = [];
+
+        arr = arrayResponse.filter((element) => {
+            if (btName.startsWith("{") && btName.endsWith("}")) {
+                btName.slice(1, -1);
+            }
+            if (btName.indexOf(",") === -1) {
+                return element.tierName.toLowerCase() === tierName.toLowerCase() && element.name.toLowerCase() === btName.toLowerCase();
+            }else {
+                return element.tierName.toLowerCase() === tierName.toLowerCase();
+            }
+            
+        });
+
+        arr.forEach(element => {
+            returnResponse.push({name: element.id})
+        });
+
+        return returnResponse;
     }
 
     getBTsInTier(tierName, arrayResponse) {
