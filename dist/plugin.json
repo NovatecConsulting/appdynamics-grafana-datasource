@@ -1,6 +1,6 @@
 {
   "name": "AppDynamics",
-  "id": "dlopes7-appdynamics-datasource",
+  "id": "novatec-appdynamics-datasource",
   "type": "datasource",
 
   "metrics": true,
@@ -9,8 +9,8 @@
   "info": {
     "description": "Appdynamics datasource",
     "author": {
-      "name": "David Lopes",
-      "url": "http://github.com/dlopes7"
+      "name": "Novatec Consulting",
+      "url": "http://github.com/NovatecConsulting"
     },
     "logos": {
       "small": "img/appdynamics.svg",
@@ -18,11 +18,11 @@
     },
     "links": [{
         "name": "GitHub",
-        "url": "https://github.com/dlopes7/appdynamics-grafana-datasource"
+        "url": "https://github.com/NovatecConsulting/appdynamics-grafana-datasource/"
       },
       {
         "name": "MIT License",
-        "url": "https://github.com/dlopes7/appdynamics-grafana-datasource/blob/master/LICENSE"
+        "url": "https://github.com/NovatecConsulting/appdynamics-grafana-datasource/blob/master/LICENSE"
       }
     ],
     "screenshots": [
@@ -30,7 +30,7 @@
       {"name": "Metric Editor", "path": "img/screenshot-metric_editor.png"}
     ],
     "version": "1.0.0",
-    "updated": "2017-08-10"
+    "updated": "2019-07-11"
   },
 
   "dependencies": {
