@@ -180,29 +180,6 @@ var AppDynamicsSDK = /** @class */ (function () {
             return [];
         });
     };
-    AppDynamicsSDK.prototype.getBusinessTransactionIdMap = function (appName, tierName) {
-        var _this = this;
-        var url = this.url + '/controller/rest/applications/' + appName + '/business-transactions/';
-        return this.backendSrv.datasourceRequest({
-            url: url,
-            method: 'GET',
-            params: { output: 'json' }
-        }).then(function (response) {
-            if (response.status === 200) {
-                if (tierName) {
-                    return _this.getBTsInTier(tierName, response.data);
-                }
-                else {
-                    return [];
-                }
-            }
-            else {
-                return [];
-            }
-        }).catch(function (error) {
-            return [];
-        });
-    };
     AppDynamicsSDK.prototype.getTierNames = function (appName) {
         var _this = this;
         return this.backendSrv.datasourceRequest({
@@ -395,14 +372,6 @@ var AppDynamicsSDK = /** @class */ (function () {
             returnResponse.push({ name: element.id });
         });
         return returnResponse;
-    };
-    AppDynamicsSDK.prototype.getBTIdsInTierMap = function (tierName, arrayResponse) {
-        // We only want the BT-ID's that belong to a tier and the corresponding BT name
-        var arr;
-        var returnResponse = [];
-        return arrayResponse.filter(function (element) {
-            return element.tierName.toLowerCase() === tierName.toLowerCase();
-        });
     };
     AppDynamicsSDK.prototype.getBTsInTier = function (tierName, arrayResponse) {
         // We only want the BTs that belong to the tier
