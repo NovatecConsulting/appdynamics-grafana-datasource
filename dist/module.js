@@ -1,20 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var datasource_1 = require("./datasource");
+const datasource_1 = require("./datasource");
 exports.Datasource = datasource_1.AppDynamicsDatasource;
-var query_ctrl_1 = require("./query_ctrl");
+const query_ctrl_1 = require("./query_ctrl");
 exports.QueryCtrl = query_ctrl_1.AppDynamicsQueryCtrl;
-var AppDynamicsConfigCtrl = /** @class */ (function () {
-    function AppDynamicsConfigCtrl() {
-    }
-    AppDynamicsConfigCtrl.templateUrl = 'partials/config.html';
-    return AppDynamicsConfigCtrl;
-}());
+class AppDynamicsConfigCtrl {
+}
+AppDynamicsConfigCtrl.templateUrl = 'partials/config.html';
 exports.ConfigCtrl = AppDynamicsConfigCtrl;
-var AppDynamicsQueryOptionsCtrl = /** @class */ (function () {
-    function AppDynamicsQueryOptionsCtrl() {
-    }
-    AppDynamicsQueryOptionsCtrl.templateUrl = 'partials/query.options.html';
-    return AppDynamicsQueryOptionsCtrl;
-}());
+class AppDynamicsQueryOptionsCtrl {
+}
+AppDynamicsQueryOptionsCtrl.templateUrl = 'partials/query.options.html';
 exports.QueryOptionsCtrl = AppDynamicsQueryOptionsCtrl;

@@ -29,8 +29,8 @@
       {"name": "Showcase", "path": "img/screenshot-showcase.png"},
       {"name": "Metric Editor", "path": "img/screenshot-metric_editor.png"}
     ],
-    "version": "1.0.0",
-    "updated": "2019-07-11"
+    "version": "1.0.3",
+    "updated": "2019-12-11"
   },
 
   "dependencies": {

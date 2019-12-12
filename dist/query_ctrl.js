@@ -1,106 +1,91 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
-var sdk_1 = require("app/plugins/sdk");
-var AppDynamicsQueryCtrl = /** @class */ (function (_super) {
-    __extends(AppDynamicsQueryCtrl, _super);
-    function AppDynamicsQueryCtrl($scope, $injector, $q, uiSegmentSrv, templateSrv) {
-        var _this = _super.call(this, $scope, $injector) || this;
-        _this.$q = $q;
-        _this.uiSegmentSrv = uiSegmentSrv;
-        _this.templateSrv = templateSrv;
-        _this.metricSegmentValueChanged = function (metricSegment, segmentIndex) {
+const sdk_1 = require("app/plugins/sdk");
+class AppDynamicsQueryCtrl extends sdk_1.QueryCtrl {
+    constructor($scope, $injector, $q, uiSegmentSrv, templateSrv) {
+        super($scope, $injector);
+        this.$q = $q;
+        this.uiSegmentSrv = uiSegmentSrv;
+        this.templateSrv = templateSrv;
+        this.metricSegmentValueChanged = (metricSegment, segmentIndex) => {
             // If the user is editing a Folder segment, we delete the ones after it. Unless the user typed a '*'
-            if (segmentIndex < _this.metricSegments.length - 1 && metricSegment.value !== '*') {
-                _this.metricSegments.length = segmentIndex + 1;
+            if (segmentIndex < this.metricSegments.length - 1 && metricSegment.value !== '*') {
+                this.metricSegments.length = segmentIndex + 1;
             }
             // Only add a new one if it is the last and it is not a Leaf and not a '*'.
-            if (segmentIndex === _this.metricSegments.length - 1 && metricSegment.expandable && metricSegment.value !== '*') {
-                _this.metricSegments.push(_this.uiSegmentSrv.newSelectMetric());
+            if (segmentIndex === this.metricSegments.length - 1 && metricSegment.expandable && metricSegment.value !== '*') {
+                this.metricSegments.push(this.uiSegmentSrv.newSelectMetric());
             }
             // If this is a Leaf, we don't need the segments after it.
-            if (segmentIndex < _this.metricSegments.length - 1 && !metricSegment.expandable) {
-                _this.metricSegments.length = segmentIndex + 1;
+            if (segmentIndex < this.metricSegments.length - 1 && !metricSegment.expandable) {
+                this.metricSegments.length = segmentIndex + 1;
             }
-            _this.target.metric = _this.metricSegments.map(function (segment) { return segment.value; }).join('|');
-            _this.panelCtrl.refresh();
+            this.target.metric = this.metricSegments.map((segment) => segment.value).join('|');
+            this.panelCtrl.refresh();
         };
-        _this.uiSegmentSrv = uiSegmentSrv;
-        _this.appD = _this.datasource.appD;
-        if (_this.target) {
-            _this.parseTarget();
+        this.uiSegmentSrv = uiSegmentSrv;
+        this.appD = this.datasource.appD;
+        if (this.target) {
+            this.parseTarget();
         }
-        _this.getApplicationNames = function (query) {
-            return _this.appD.getApplicationNames(query)
-                .then(_this.transformToSegments(false));
+        this.getApplicationNames = (query) => {
+            return this.appD.getApplicationNames(query)
+                .then(this.transformToSegments(false));
         };
-        _this.getMetricNames = function (index) {
-            return _this.appD.getMetricNames(_this.target.application, _this.getSegmentPathUpTo(index))
-                .then(_this.transformToSegments(false));
+        this.getMetricNames = (index) => {
+            return this.appD.getMetricNames(this.target.application, this.getSegmentPathUpTo(index))
+                .then(this.transformToSegments(false));
         };
-        return _this;
     }
-    AppDynamicsQueryCtrl.prototype.parseTarget = function () {
-        var _this = this;
+    parseTarget() {
         this.metricSegments = [];
         this.target.transformLegendText = '1';
         this.applicationSegment = this.uiSegmentSrv.newSegment(this.target.application || 'Application');
         if (this.target.metric) {
-            this.target.metric.split('|').forEach(function (element, index, arr) {
-                var expandable = true;
+            this.target.metric.split('|').forEach((element, index, arr) => {
+                let expandable = true;
                 if (index === arr.length - 1) {
                     expandable = false;
                 }
-                var newSegment = _this.uiSegmentSrv.newSegment({ value: element, expandable: expandable });
-                _this.metricSegments.push(newSegment);
+                const newSegment = this.uiSegmentSrv.newSegment({ value: element, expandable });
+                this.metricSegments.push(newSegment);
             });
         }
         else {
             this.metricSegments = [this.uiSegmentSrv.newSelectMetric()];
         }
-    };
-    AppDynamicsQueryCtrl.prototype.getSegmentPathUpTo = function (index) {
-        var arr = this.metricSegments.slice(0, index);
-        var segments = '';
-        arr.forEach(function (element) {
+    }
+    getSegmentPathUpTo(index) {
+        const arr = this.metricSegments.slice(0, index);
+        let segments = '';
+        arr.forEach((element) => {
             segments += element.value + '|';
         });
         return segments;
-    };
-    AppDynamicsQueryCtrl.prototype.appChanged = function () {
+    }
+    appChanged() {
         this.target.application = this.applicationSegment.value;
         this.panelCtrl.refresh();
-    };
-    AppDynamicsQueryCtrl.prototype.toggleEditorMode = function () {
+    }
+    toggleEditorMode() {
         this.target.rawQuery = !this.target.rawQuery;
         if (!this.target.rawQuery) {
             // refresh target metric from segments (we discard the changes done in raw query mode)
-            this.target.metric = this.metricSegments.map(function (segment) { return segment.value; }).join('|');
+            this.target.metric = this.metricSegments.map((segment) => segment.value).join('|');
             this.panelCtrl.refresh();
         }
-    };
-    AppDynamicsQueryCtrl.prototype.onChangeInternal = function () {
+    }
+    onChangeInternal() {
         this.panelCtrl.refresh(); // Asks the panel to refresh data.
-    };
-    AppDynamicsQueryCtrl.prototype.transformToSegments = function (addTemplateVars) {
-        var _this = this;
-        return function (results) {
-            var segments = results.map(function (segment) {
-                return _this.uiSegmentSrv.newSegment({ value: segment.name, expandable: segment.type === 'folder' });
+    }
+    transformToSegments(addTemplateVars) {
+        return (results) => {
+            const segments = results.map((segment) => {
+                return this.uiSegmentSrv.newSegment({ value: segment.name, expandable: segment.type === 'folder' });
             });
             return segments;
         };
-    };
-    AppDynamicsQueryCtrl.templateUrl = 'partials/query.editor.html';
-    return AppDynamicsQueryCtrl;
-}(sdk_1.QueryCtrl));
+    }
+}
+AppDynamicsQueryCtrl.templateUrl = 'partials/query.editor.html';
 exports.AppDynamicsQueryCtrl = AppDynamicsQueryCtrl;

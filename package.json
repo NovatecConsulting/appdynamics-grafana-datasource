@@ -1,6 +1,6 @@
 {
   "name": "appdynamics-grafana-datasource",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,6 +11,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/grafana": "https://git@github.com/CorpGlory/types-grafana.git",
     "angular": "^1.6.5",
     "gulp": "^4.0.2",
     "gulp-clean": "^0.4.0",

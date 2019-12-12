@@ -1,4 +1,4 @@
-
+import _ from 'lodash';
 
 export function isContainsBraces(query) {
     const bracesPattern = /.*\{.+\}.*?$/;
