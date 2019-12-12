@@ -2,7 +2,7 @@ const gulp = require('gulp')
 const ts = require('gulp-typescript')
 const clean = require('gulp-clean')
 
-const STATIC_FILES = ['src/*.json', 'src/**/*.json', 'src/**/*.md']
+const STATIC_FILES = ['src/*.json', 'src/**/*.json', 'src/**/*.md', 'README.md']
 
 const tsProject = ts.createProject('tsconfig.json')
 
@@ -38,15 +38,15 @@ gulp.task('img', function () {
         .pipe(gulp.dest('dist/img/'));
 });
 
-gulp.task('watch', gulp.parallel(['compile']), () => {
-    gulp.watch('src/**/*.ts', ['compile']);
-    gulp.watch('src/**/*.json', ['assets']);
-    gulp.watch('src/**/*.md', ['assets']);
-    gulp.watch('src/partials/*', ['partials']);
-    gulp.watch('src/css/*', ['css']);
-    gulp.watch('src/img/*', ['img']);
-})
+gulp.task('watch', gulp.series(function () {
+    gulp.watch('src/**/*.ts', gulp.series('compile'));
+    gulp.watch('src/**/*.json', gulp.series('assets'));
+    gulp.watch('src/**/*.md', gulp.series('assets'));
+    gulp.watch('src/partials/*', gulp.series('partials'));
+    gulp.watch('src/css/*', gulp.series('css'));
+    gulp.watch('src/img/*', gulp.series('img'));
+}));
 
 gulp.task('build', gulp.series(['clean', 'compile', 'assets', 'partials', 'css', 'img']));
 
-gulp.task('default', gulp.parallel(['watch', 'assets', 'partials', 'css', 'img']));
+gulp.task('default', gulp.series(['build', 'watch']));

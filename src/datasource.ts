@@ -1,5 +1,4 @@
 import { AppDynamicsSDK } from './appd_sdk';
-import appEvents from 'app/core/app_events';
 
 export class AppDynamicsDatasource {
 

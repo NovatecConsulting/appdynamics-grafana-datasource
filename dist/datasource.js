@@ -1,30 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var appd_sdk_1 = require("./appd_sdk");
-var AppDynamicsDatasource = /** @class */ (function () {
-    function AppDynamicsDatasource(instanceSettings, $q, backendSrv, templateSrv) {
+const appd_sdk_1 = require("./appd_sdk");
+class AppDynamicsDatasource {
+    constructor(instanceSettings, $q, backendSrv, templateSrv) {
         this.$q = $q;
         this.backendSrv = backendSrv;
         this.templateSrv = templateSrv;
         this.appD = new appd_sdk_1.AppDynamicsSDK(instanceSettings, backendSrv, templateSrv);
         this.templateSrv = templateSrv;
     }
-    AppDynamicsDatasource.prototype.query = function (options) {
+    query(options) {
         return this.appD.query(options);
-    };
-    AppDynamicsDatasource.prototype.testDatasource = function () {
+    }
+    testDatasource() {
         return this.appD.testDatasource();
-    };
-    AppDynamicsDatasource.prototype.annotationQuery = function () {
+    }
+    annotationQuery() {
         // TODO implement annotationQuery
-    };
-    AppDynamicsDatasource.prototype.metricFindQuery = function (query) {
-        return this.appD.getTemplateNames(query).then(function (results) {
-            return results.map(function (result) {
+    }
+    metricFindQuery(query) {
+        return this.appD.getTemplateNames(query).then((results) => {
+            return results.map((result) => {
                 return { text: result.name };
             });
         });
-    };
-    return AppDynamicsDatasource;
-}());
+    }
+}
 exports.AppDynamicsDatasource = AppDynamicsDatasource;

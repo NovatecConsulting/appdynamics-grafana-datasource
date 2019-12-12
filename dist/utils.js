@@ -1,22 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const lodash_1 = require("lodash");
 function isContainsBraces(query) {
-    var bracesPattern = /.*\{.+\}.*?$/;
+    const bracesPattern = /.*\{.+\}.*?$/;
     return bracesPattern.test(query);
 }
 exports.isContainsBraces = isContainsBraces;
 function isContainsParenthesis(query) {
-    var parenthesisPattern = /.*\(.+\).*?$/;
+    const parenthesisPattern = /.*\(.+\).*?$/;
     return parenthesisPattern.test(query);
 }
 exports.isContainsParenthesis = isContainsParenthesis;
 function splitTemplateQuery(query) {
-    var splitPattern = /\{[^\{\}]*\}|\{\/.*\/\}/g;
-    var split;
+    const splitPattern = /\{[^\{\}]*\}|\{\/.*\/\}/g;
+    let split;
     if (isContainsBraces(query)) {
-        var result = query.match(splitPattern);
-        split = _.map(result, function (part) {
-            return _.trim(part, '{}').split(',');
+        const result = query.match(splitPattern);
+        split = lodash_1.default.map(result, (part) => {
+            return lodash_1.default.trim(part, '{}').split(',');
         });
     }
     else {
@@ -26,14 +27,14 @@ function splitTemplateQuery(query) {
 }
 exports.splitTemplateQuery = splitTemplateQuery;
 function resolveMetricQueries(query) {
-    var queries = [];
-    var splitPattern = /\([^\()\)]*\)|\(\/.*\/\)/g;
+    const queries = [];
+    const splitPattern = /\([^\()\)]*\)|\(\/.*\/\)/g;
     if (isContainsParenthesis(query)) {
-        var matches = query.match(splitPattern);
-        matches.forEach(function (element) {
-            var allPatterns = new RegExp(element, 'g');
-            var possibleElements = element.match(allPatterns);
-            possibleElements.forEach(function (possibleElement) {
+        const matches = query.match(splitPattern);
+        matches.forEach((element) => {
+            const allPatterns = new RegExp(element, 'g');
+            const possibleElements = element.match(allPatterns);
+            possibleElements.forEach((possibleElement) => {
                 // MATTHIAS HUBER: we do not know why parenthesis needs to be removed. Maybe AppDynamics REST Calls in
                 // earlier versions did not work. We have to keep them for metrics like 'Average Response Time (ms)'
                 // queries.push(query.replace(element, possibleElement));
@@ -49,11 +50,11 @@ function resolveMetricQueries(query) {
 }
 exports.resolveMetricQueries = resolveMetricQueries;
 function getFirstTemplated(query) {
-    var allTemplated = splitTemplateQuery(query);
-    var splitPattern = /\{[^\{\}]*\}|\{\/.*\/\}/g;
+    const allTemplated = splitTemplateQuery(query);
+    const splitPattern = /\{[^\{\}]*\}|\{\/.*\/\}/g;
     if (isContainsBraces(query)) {
-        var matches = query.match(splitPattern);
-        for (var i = 0; i < matches.length; i++) {
+        const matches = query.match(splitPattern);
+        for (let i = 0; i < matches.length; i++) {
             query = query.replace(matches[i], allTemplated[i][0]);
         }
     }
