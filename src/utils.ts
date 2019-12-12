@@ -28,7 +28,7 @@ export function splitTemplateQuery(query) {
 }
 
 export function resolveMetricQueries(query) {
-    const queries = [];
+    const queries: any[] = [];
     const splitPattern = /\([^\()\)]*\)|\(\/.*\/\)/g;
     if (isContainsParenthesis(query)) {
         const matches = query.match(splitPattern);

@@ -1,5 +1,5 @@
-import * as dateMath from 'app/core/utils/datemath';
-import appEvents from 'app/core/app_events';
+import * as dateMath from 'grafana/app/core/utils/datemath';
+import appEvents from 'grafana/app/core/app_events';
 import * as utils from './utils';
 
 /*
@@ -35,7 +35,7 @@ export class AppDynamicsSDK {
             return new Promise((resolve) => {
 
                 if (target.hide) { // If the user clicked on the eye icon to hide, don't fetch the metrics.
-                    resolve();
+                    return resolve();
                 } else {
                     const templatedApp = this.templateSrv.replace(target.application, options.scopedVars, 'regex');
                     const templatedMetric = this.templateSrv.replace(target.metric, options.scopedVars, 'regex');
@@ -128,7 +128,7 @@ export class AppDynamicsSDK {
 
     // This helper method just converts the AppD response to the Grafana format
     convertMetricData(metricElement) {
-        const responseArray = [];
+        const responseArray: any[] = [];
 
         metricElement.metricValues.forEach((metricValue) => {
             responseArray.push([metricValue.value, metricValue.startTimeInMillis]);
@@ -262,14 +262,14 @@ export class AppDynamicsSDK {
         if (query.indexOf('.') > -1) {
             const values = query.split('.');
             let appName: string;
-            let tierName: string;
-            let btName: string;
+            let tierName: string = "";
+            let btName: string = "";
             let type: string;
 
             type = values[values.length - 1];
             appName = this.templateSrv.replace(values[0]);
 
-            if (values.length >= 3) {      
+            if (values.length >= 3) {
                 tierName = this.templateSrv.replace(values[1]);
             }
             if (values.length >= 4) {
@@ -328,7 +328,7 @@ export class AppDynamicsSDK {
             params: { output: 'json' }
         }).then((response) => {
             if (response.status === 200) {
-                return [{name:response.data[0]["id"]}];
+                return [{ name: response.data[0]["id"] }];
             } else {
                 return [];
             }
@@ -395,14 +395,14 @@ export class AppDynamicsSDK {
             }
             if (btName.indexOf(",") === -1) {
                 return element.tierName.toLowerCase() === tierName.toLowerCase() && element.name.toLowerCase() === btName.toLowerCase();
-            }else {
+            } else {
                 return element.tierName.toLowerCase() === tierName.toLowerCase();
             }
-            
+
         });
 
         arr.forEach(element => {
-            returnResponse.push({name: element.id})
+            returnResponse.push({ name: element.id })
         });
 
         return returnResponse;

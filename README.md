@@ -10,14 +10,10 @@ This software is not affiliated with or supported by AppDynamics.
 
 The data source can be build using the following command:
 
-    npm run build
+    npm run dev
 
 This creates a `dist` directory which contains the data source that can be mounted by Grafana.
 
 During development, the following command can be used to watch the sources an rebuild them if they change:
 
     npm run watch
-
-### Using Grafana TypeScript Types
-
-In order to use Grafana TypeScript types in a IDE, move the `/node_modules/@types/grafana/app` directory one level up, resulting in `/node_modules/@types/app`.

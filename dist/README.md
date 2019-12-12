@@ -18,6 +18,6 @@ During development, the following command can be used to watch the sources an re
 
     npm run watch
 
-### Using Grafana TypeScript Types
+or just build a not monified version of the code:
 
-In order to use Grafana TypeScript types in a IDE, move the `/node_modules/@types/grafana/app` directory one level up, resulting in `/node_modules/@types/app`.
+    npm run dev
