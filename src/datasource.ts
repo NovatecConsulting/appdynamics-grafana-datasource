@@ -4,11 +4,8 @@ export class AppDynamicsDatasource {
 
     appD: AppDynamicsSDK;
 
-    constructor(instanceSettings, private $q, private backendSrv, private templateSrv) {
-
+    constructor(instanceSettings, backendSrv, templateSrv) {
         this.appD = new AppDynamicsSDK(instanceSettings, backendSrv, templateSrv);
-        this.templateSrv = templateSrv;
-
     }
 
     query(options) {

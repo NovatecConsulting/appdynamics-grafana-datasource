@@ -1,5 +1,4 @@
-import angular from 'angular';
-import { QueryCtrl } from 'app/plugins/sdk';
+import { QueryCtrl } from 'grafana/app/plugins/sdk';
 
 export class AppDynamicsQueryCtrl extends QueryCtrl {
 
@@ -14,7 +13,7 @@ export class AppDynamicsQueryCtrl extends QueryCtrl {
 
     metricPath: string[];
 
-    constructor($scope, $injector, private $q, private uiSegmentSrv, private templateSrv)  {
+    constructor($scope, $injector, private uiSegmentSrv)  {
         super($scope, $injector);
 
         this.uiSegmentSrv = uiSegmentSrv;
