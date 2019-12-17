@@ -1,6 +1,7 @@
 import * as dateMath from 'grafana/app/core/utils/datemath';
 import appEvents from 'grafana/app/core/app_events';
 import * as utils from './utils';
+import _ from 'lodash';
 
 /*
     This is the class where all AppD logic should reside.
@@ -156,7 +157,7 @@ export class AppDynamicsSDK {
         // TODO implement annotationQuery
     }
 
-    getBusinessTransactionNames(appName, tierName) {
+    getBusinessTransactionNames(appName, tierName, onlyPerformanceData: boolean = false) {
         const url = this.url + '/controller/rest/applications/' + appName + '/business-transactions';
         return this.backendSrv.datasourceRequest({
             url,
@@ -164,10 +165,16 @@ export class AppDynamicsSDK {
             params: { output: 'json' }
         }).then((response) => {
             if (response.status === 200) {
+                let businessTransactions: any[];
                 if (tierName) {
-                    return this.getBTsInTier(tierName, response.data);
+                    businessTransactions = this.getBTsInTier(tierName, response.data);
                 } else {
-                    return this.getFilteredNames('', response.data);
+                    businessTransactions = this.getFilteredNames('', response.data);
+                }
+                if (onlyPerformanceData) {
+                    return this.filterBtWithoutPerfData(appName, tierName, businessTransactions);
+                } else {
+                    return businessTransactions;
                 }
             } else {
                 return [];
@@ -176,6 +183,53 @@ export class AppDynamicsSDK {
         }).catch((error) => {
             return [];
         });
+    }
+
+    filterBtWithoutPerfData(appName: string, tierName: string, businessTransactions: any[]) {
+        const startTime = Math.ceil(dateMath.parse(this.templateSrv.timeRange.from));
+        const endTime = Math.ceil(dateMath.parse(this.templateSrv.timeRange.to));
+
+        const requests: Promise<any>[] = [];
+
+        for (var i = 0; i < businessTransactions.length; i++) {
+            const businessTransaction = businessTransactions[i];
+            const metricPath = 'Business Transaction Performance|Business Transactions|' + tierName + '|' + businessTransaction.name + '|Calls per Minute';
+
+            console.log("Query metric path:", metricPath);
+
+            const requestPromise: Promise<any> = this.backendSrv.datasourceRequest({
+                url: this.url + '/controller/rest/applications/' + appName + '/metric-data',
+                method: 'GET',
+                params: {
+                    'metric-path': metricPath,
+                    'time-range-type': 'BETWEEN_TIMES',
+                    'start-time': startTime,
+                    'end-time': endTime,
+                    'rollup': 'true',
+                    'output': 'json'
+                },
+                headers: { 'Content-Type': 'application/json' }
+            }).then((response) => {
+                return {
+                    businessTransaction: businessTransaction.name,
+                    response
+                };
+            });
+
+            requests.push(requestPromise);
+        }
+
+        return Promise.all(requests)
+            .then((results) => {
+                const filteredTransactionNames = _(results)
+                    .filter(element => element.response.data[0].metricValues.length > 0)
+                    .map(element => {
+                        return { name: element.businessTransaction };
+                    })
+                    .value();
+
+                return filteredTransactionNames;
+            });
     }
 
     getBusinessTransactionId(appName, tierName, btName) {
@@ -256,8 +310,13 @@ export class AppDynamicsSDK {
         });
     }
 
-    getTemplateNames(query) {
+    getTemplateNames(query: string) { // AppName.Tier.BusinessTransactions.OnlyPerfData        
         const possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes', 'ServiceEndpoints', 'ApplicationId', 'BusinessTransactionId'];
+        const onlyPerformanceData = query.endsWith('.OnlyPerfData');
+
+        if (onlyPerformanceData) {
+            query = query.substr(0, query.lastIndexOf('.'));
+        }
 
         if (query.indexOf('.') > -1) {
             const values = query.split('.');
@@ -282,7 +341,7 @@ export class AppDynamicsSDK {
             } else {
                 switch (type) {
                     case 'BusinessTransactions':
-                        return this.getBusinessTransactionNames(appName, tierName);
+                        return this.getBusinessTransactionNames(appName, tierName, onlyPerformanceData);
                     case 'BusinessTransactionId':
                         return this.getBusinessTransactionId(appName, tierName, btName);
                     case 'Tiers':

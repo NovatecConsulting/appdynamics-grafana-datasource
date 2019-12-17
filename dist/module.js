@@ -101,6 +101,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var grafana_app_core_app_events__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! grafana/app/core/app_events */ "grafana/app/core/app_events");
 /* harmony import */ var grafana_app_core_app_events__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(grafana_app_core_app_events__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils */ "./utils.ts");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! lodash */ "lodash");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
+
 
 
 
@@ -235,8 +238,9 @@ var AppDynamicsSDK = /** @class */ (function () {
     AppDynamicsSDK.prototype.annotationQuery = function () {
         // TODO implement annotationQuery
     };
-    AppDynamicsSDK.prototype.getBusinessTransactionNames = function (appName, tierName) {
+    AppDynamicsSDK.prototype.getBusinessTransactionNames = function (appName, tierName, onlyPerformanceData) {
         var _this = this;
+        if (onlyPerformanceData === void 0) { onlyPerformanceData = false; }
         var url = this.url + '/controller/rest/applications/' + appName + '/business-transactions';
         return this.backendSrv.datasourceRequest({
             url: url,
@@ -244,11 +248,18 @@ var AppDynamicsSDK = /** @class */ (function () {
             params: { output: 'json' }
         }).then(function (response) {
             if (response.status === 200) {
+                var businessTransactions = void 0;
                 if (tierName) {
-                    return _this.getBTsInTier(tierName, response.data);
+                    businessTransactions = _this.getBTsInTier(tierName, response.data);
                 }
                 else {
-                    return _this.getFilteredNames('', response.data);
+                    businessTransactions = _this.getFilteredNames('', response.data);
+                }
+                if (onlyPerformanceData) {
+                    return _this.filterBtWithoutPerfData(appName, tierName, businessTransactions);
+                }
+                else {
+                    return businessTransactions;
                 }
             }
             else {
@@ -256,6 +267,49 @@ var AppDynamicsSDK = /** @class */ (function () {
             }
         }).catch(function (error) {
             return [];
+        });
+    };
+    AppDynamicsSDK.prototype.filterBtWithoutPerfData = function (appName, tierName, businessTransactions) {
+        var startTime = Math.ceil(grafana_app_core_utils_datemath__WEBPACK_IMPORTED_MODULE_0__["parse"](this.templateSrv.timeRange.from));
+        var endTime = Math.ceil(grafana_app_core_utils_datemath__WEBPACK_IMPORTED_MODULE_0__["parse"](this.templateSrv.timeRange.to));
+        var requests = [];
+        var _loop_1 = function () {
+            var businessTransaction = businessTransactions[i];
+            var metricPath = 'Business Transaction Performance|Business Transactions|' + tierName + '|' + businessTransaction.name + '|Calls per Minute';
+            console.log("Query metric path:", metricPath);
+            var requestPromise = this_1.backendSrv.datasourceRequest({
+                url: this_1.url + '/controller/rest/applications/' + appName + '/metric-data',
+                method: 'GET',
+                params: {
+                    'metric-path': metricPath,
+                    'time-range-type': 'BETWEEN_TIMES',
+                    'start-time': startTime,
+                    'end-time': endTime,
+                    'rollup': 'true',
+                    'output': 'json'
+                },
+                headers: { 'Content-Type': 'application/json' }
+            }).then(function (response) {
+                return {
+                    businessTransaction: businessTransaction.name,
+                    response: response
+                };
+            });
+            requests.push(requestPromise);
+        };
+        var this_1 = this;
+        for (var i = 0; i < businessTransactions.length; i++) {
+            _loop_1();
+        }
+        return Promise.all(requests)
+            .then(function (results) {
+            var filteredTransactionNames = lodash__WEBPACK_IMPORTED_MODULE_3___default()(results)
+                .filter(function (element) { return element.response.data[0].metricValues.length > 0; })
+                .map(function (element) {
+                return { name: element.businessTransaction };
+            })
+                .value();
+            return filteredTransactionNames;
         });
     };
     AppDynamicsSDK.prototype.getBusinessTransactionId = function (appName, tierName, btName) {
@@ -339,6 +393,10 @@ var AppDynamicsSDK = /** @class */ (function () {
     };
     AppDynamicsSDK.prototype.getTemplateNames = function (query) {
         var possibleQueries = ['BusinessTransactions', 'Tiers', 'Nodes', 'ServiceEndpoints', 'ApplicationId', 'BusinessTransactionId'];
+        var onlyPerformanceData = query.endsWith('.OnlyPerfData');
+        if (onlyPerformanceData) {
+            query = query.substr(0, query.lastIndexOf('.'));
+        }
         if (query.indexOf('.') > -1) {
             var values = query.split('.');
             var appName = void 0;
@@ -359,7 +417,7 @@ var AppDynamicsSDK = /** @class */ (function () {
             else {
                 switch (type) {
                     case 'BusinessTransactions':
-                        return this.getBusinessTransactionNames(appName, tierName);
+                        return this.getBusinessTransactionNames(appName, tierName, onlyPerformanceData);
                     case 'BusinessTransactionId':
                         return this.getBusinessTransactionId(appName, tierName, btName);
                     case 'Tiers':
