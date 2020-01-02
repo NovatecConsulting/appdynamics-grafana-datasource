@@ -28,6 +28,7 @@ The supported template queries for now are:
 * AppName.Tiers (All Tiers for the Application Name)
 * AppName.Nodes (All Nodes for the Application Name)
 * AppName.TierName.BusinessTransactions (All BTs for a specific Tier)
-* AppName.TierName.BusinessTransactions.OnlyPerfData (All BTs with Perfomance Data only)
+* AppName.TierName.BusinessTransactions.BusinessTransactionId (All BT Ids for a specific Tier)
+* AppName.TierName.BusinessTransactions.OnlyPerfData (All BTs for a specific Tier with Perfomance Data only)
 * AppName.TierName.ServiceEndpoints (All SEs for a specific Tier)
 * AppName.TierName.Nodes (All Nodes for a specific Tier)
